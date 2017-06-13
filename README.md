@@ -1,7 +1,7 @@
 
-## OledPix A compact "no buffer" lib for SSD1306
+## OledPix - A compact "no buffer" lib for SSD1306
 
-## OledMap A compact lib for SSD1306, need 1k buffer
+## OledMap - A compact lib for SSD1306, need 1k buffer
 
 ![Oled screen](/OledPix.jpg)
 
@@ -10,7 +10,7 @@
 
 ### [Application examples][4] tested on Arduino exist in French.
 
-The picture shows also a PIC 10F202 (512 12-bit instructions) programmed in assembler as a proof ov compactness.
+#### The picture shows also a PIC 10F202 (512 12-bit instructions) programmed in assembler as a proof ov compactness.
 
 #### OledPix.h lib is quite useful to help debugging, showing variables and sensors values in integer and graphic modes, adding only 1k of program and few ms to update a value on screen or write the next dot (no buffer to transfer).
 
@@ -19,7 +19,7 @@ The picture shows also a PIC 10F202 (512 12-bit instructions) programmed in asse
  OledMap proposes in addition OledLineCircleMap.h, which works on OledPix, but misses pixels.
 
 #### OledMap is faster when you call a function and draw inside memory, but the required Show(); instruction to see the result takes 70 ms.
-OledMap has the advantage over GFX that one can modify a function, add a new one in minutes, or remove it to save program memory. With little programming skill, one can do a mix of OledPix and OledMap to have a small bitmap with frequent updates and use direct write to the rest of the screen.
+OledMap has the advantage over GFX that one can modify a function, add a new one in minutes, remove unused functions to save program memory. With little programming skill, one can do a mix of OledPix and OledMap to have a small bitmap with frequent updates and use direct write to the rest of the screen.
 
 Small is beautifull. You can see the [OledPix.h listing][5] and [OledMap.h listing][6] complete listing (5 pages with LilaMerge).
 
