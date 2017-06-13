@@ -5,19 +5,15 @@
 
 ![Oled screen](/OledPix.jpg)
 
-The OledPix lib is an include file written in C. This means one simple file to refer to, one setup function to call.
-### See [OledPix][1] for the structure,
-[OledLib Functions][2] for the list of commands,
-and [OledLib OledI2C] for the two I2C libraries of minimum size.
-[1]: http://www.didel.com/OledLib.pdf
-[2]: http://www.didel.com/OledFunctions.pdf
-[3]: http://www.didel.com/OledI2C.pdf
+#### The OledPix lib is an include file written in C. This means one simple file to refer to, one setup function to call.
+### See [OledPix][1] for the structure, [OledLib Functions][2] for the list of commands, and [OledI2C][3] for the two I2C libraries of minimum size.
 
 ### [Application examples][4] tested on Arduino exist in French.
-[4]:  http://www.didel.com/OledUtile.pdf
-The picture shows also a PIC 10F202 (512 12-bit instructions) programmed in assembler.
+
+The picture shows also a PIC 10F202 (512 12-bit instructions) programmed in assembler as a proof ov compactness.
 
 #### OledPix.h lib is quite useful to help debugging, showing variables and sensors values in integer and graphic modes, adding only 1k of program and few ms to update a value on screen or write the next dot (no buffer to transfer).
+
  OledPix.h consists of 6 subfiles. OledCommand.h is required. OledGenc.h (600 bytes) may not need the lower cases or stripped to keep hex digits only. OledCar.h is not required if the oscilloscope function is only used, OledNum.h create hexa and decimal numbers, OledBig.h takes 500 bytes to get double size numbers, OledGra.h is very small, only dots (a multitrace scope needs 300 bytes).
 
  OledMap proposes in addition OledLineCircleMap.h, which works on OledPix, but misses pixels.
@@ -27,5 +23,9 @@ OledMap has the advantage over GFX that one can modify a function, add a new one
 
 Small is beautifull. You can see the [OledPix.h listing][5] and [OledMap.h listing][6] complete listing (5 pages with LilaMerge).
 
-[5]:  http://www.didel.com/OledPix.h.pdf>
-[6]:  http://www.didel.com/OledMap.h.pdf>
+[1]: http://www.didel.com/OledLib.pdf
+[2]: http://www.didel.com/OledFunctions.pdf
+[3]: http://www.didel.com/OledI2C.pdf
+[4]:  http://www.didel.com/OledUtile.pdf
+[5]:  http://www.didel.com/OledPix.h.pdf
+[6]:  http://www.didel.com/OledMap.h.pdf
