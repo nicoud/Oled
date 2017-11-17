@@ -186,7 +186,7 @@ void Bin8 (byte bb) {
 char ConvNibble (byte nn) { // converti 4 bit hexa en Ascii
   byte cc;
   if (nn<10) {cc = nn + '0';}
-  else {cc = nn-10 + 'A';}
+  else {cc = nn-10 + 'a';}
   return cc;
 }
 void Hex8 (byte hh) {
