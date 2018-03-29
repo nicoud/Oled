@@ -32,7 +32,7 @@ Small is beautifull. You can see the [OledPix.h listing][5] and [OledMap.h listi
 Does limit the height to 4 lines instad of 8. On the 128x64, texts and numbers have double height, single width. Faster to write than double size characters.
 On the 128x32, you get the normal size.
 
-#### Complement on March 29, 2018 - I2C handlers comparizon and multiple OledFunctions
+#### Complement on March 29, 2018 - I2C handlers comparison and multiple OledFunctions
 Documentation coming. See links on www.didel.com/Oled.html
 
 [5]:  http://www.didel.com/OledPix.h.pdf>
