@@ -1,7 +1,6 @@
-//\prog:"OledMap.h"| Assembly of the 7 Oled libs for 1k bitmap. 
-//\b:MIT License
+// OledPix.h // i2c  180130 
+//#include <avrIO.h> en C sur avr
 //===============
-//\rout:"OledGenc.h"|  180130 Gencar recorrigé D g
 #include <avr/pgmspace.h>
 const uint8_t taNum[] PROGMEM = {
   0x00,0x00,0x00,0x00, 0x00,0xc0,0xde,0x00, // space ! 
@@ -56,6 +55,7 @@ const uint8_t taMin [] PROGMEM = {
   0x64,0x54,0x4C,0x44, 0x08,0x08,0x36,0x41, // z {
   0x00,0x00,0xff,0x00, 0x41,0x36,0x08,0x08, // | }
   0x10,0x20,0x10,0x20, 0xff,0xff,0xff,0xff}; // ~ del
+const uint8_t squar[] PROGMEM ={0xff,0x81,0x81,0x81,0x81,0x81,0x81,0xff};
 const uint8_t smile[] PROGMEM = {0x3c,0x42,0x95,0xa5,0xa1,0xa1, 0xa5,0x95,0x42,0x3c};
 const uint8_t sad  [] PROGMEM = {0x3c,0x42,0xc5,0xa5,0xa1,0xa1, 0xa5,0xc5,0x42,0x3c};
 const uint8_t didel[] PROGMEM = {0x82,0xf2,0xfe,0xfe,0x8e,0x82,0xc2,0x3c,0x00, \
@@ -64,130 +64,122 @@ const uint8_t didel[] PROGMEM = {0x82,0xf2,0xfe,0xfe,0x8e,0x82,0xc2,0x3c,0x00, \
                               0xc0,0xf8,0xfe,0xfe,0x96,0x92,0x82,0x02,0x00, \
                               0xc0,0xf8,0xfe,0xfe,0x86,0x80,0x80,0x80,0x80 };
 
-//===============================================================
-//\rout:"OledControlMap.h"| 170429
-// Initialisation and transfer
-void  Cmd (byte cc) {  
-  Start(); Write (Adr); Write(0);Write (cc); Stop();
-}
-void  Cmd2 (byte aa,byte bb) {  
-  Start(); Write (Adr); Write(0);Write (aa); Write (bb);Stop();
-}
-void  Clear();  void Show();
+//xxxxxxxxxxxxxxxxxxxxxx
+//\prog: "OledPixBase.h"   170504
+// Initialisation et fonctions de base
+void  Clear();
 byte taInitOled[]={ 0xae, 0xd5, 0x80, 0xa8, 63, \
         0xD3, 0x0, 0x40, 0x8d, 0x14, 0x20, 0x00, 0xa1, \
         0xc8, 0xDA, 0x12, 0x81, 0xcf, 0xd9, 0xf1, 0xdb, \
-        0x40, 0xa4, 0xa6, 0x2e, 0xaf  };
-
-uint16_t ptMap;
-uint8_t taMap[1024];
-void  Clear() {  //nn<128x8=1024
-    for (int i=0; i<1024; i++) {taMap[i]=0;}
-}
-void  ClearRight() {  //nn<128x8=1024
-    for (int i=0; i<1024; i++) {
-      if (i&0x40) {taMap[i]=0;} // 64..127
-    }
-}
-void  Fill(byte li,byte co,byte ll,byte dd) { 
-    ptMap = 128*li+co;
-    for (int i=0; i<ll; i++) {taMap[ptMap+i]=0;}
-}
-
-void  Show () {  // include Initransfert
-  Start(); Write (Adr); Write(0); 
-  Write (0x21); Write (0); Write (127);
-  Write (0x22); Write (0); Write (7);
-  Stop();
-  Start(); Write (Adr); Write (0x40); 
-  for (int i=0; i<1024; i++)
-   { Write (taMap[i]);}
-  Stop();
-  Cmd(0xC8);  // patch pour bb!
-}
-
-// set pointer
-byte saveLi,saveCol;
-void  SetLine (byte cc) { 
-  saveLi=cc;
-  ptMap = 128*saveLi+saveCol;
-}
-void  SetCol (byte cc) {  
-  saveCol=cc;
-  ptMap = 128*saveLi+saveCol;
-}
-void  LiCol (byte li,byte cc) { 
-  saveLi=li;   saveCol=cc;
-  ptMap = (128*saveLi)+saveCol;
-}
-void  GetLiCol () { 
-  saveLi=ptMap/128;   saveCol=ptMap%128;
-}
-
-#define  Sprite(tt) \  
-  for (byte i=0; i<sizeof tt; i++) \
-   { taMap[ptMap++] = pgm_read_byte(&tt[i]); }
- 
-// For the character generators
-#define Copy(tt) \
-  for (byte i=0; i<sizeof tt/4; i++) { \
-   for (byte j=0; j<4; j++) {taMap[ptMap++] = (pgm_read_byte(&tt[4*i+j]));} \
-   taMap[i++]=0;
-// Maj en 5 de large 
-#define CopyMaj(tt) \
-  for (byte i=0; i<sizeof tt/5; i++) { \
-   for (byte j=0; j<5; j++) {taMap[ptMap++] = (pgm_read_byte(&tt[5*i+j]));} \
-   taMap[i++]=0;
-
-void  SetupOledMap() { 
+        0x40, 0xa4, 0xa6, 0x2e, 0xaf };
+void  SetupOledPix () { 
   for (byte i=0; i<sizeof (taInitOled); i++) { 
     Start(); Write (Adr); Write(0);
     Write (taInitOled[i]); Stop();
   }
-  Clear(); //Sprite (smile);
-  Show();
+  Clear();
 }
-
-//===============================================================
-//\rout:"OledCarMap.h"| Copy car and text in buffer 
-//\image:OledI2C.bmp
+void  WrStaData () {  
+  Start(); Write (Adr); Write(0x40);
+}
+void  WrStaCom () {  
+  Start(); Write (Adr); Write(0);
+}
+void  Cmd (byte cc) {  
+  WrStaCom (); Write (cc); Stop();
+}
+byte taIniTr[]={Adr,0,0x21,0x0,0x7f,0x22,0x0,0x7F};
+void  IniTransfert () {  
+  for (byte i=0; i<sizeof (taIniTr); i++) { 
+    WrStaCom ();
+    Write (taIniTr[i]); Stop();
+  } 
+}
+byte saveLi,saveCol;
+void  SetLine (byte cc) { 
+  saveLi=cc;
+  cc--; if(cc<0) {cc=7;} 
+  WrStaCom (); Write (0x22);
+  Write (cc); Write (7); Stop();
+}
+void  SetCol (byte cc) {  
+  WrStaCom (); Write (0x21);
+  Write (cc); Write (127); Stop();
+  saveCol=cc;
+}
+void  LiCol (byte li,byte co) { 
+  SetLine (li); SetCol (co);
+//  ptMap = (128*saveLi)+saveCol;
+}
+void  Clear() {  //nn<128x8=1024
+    IniTransfert();
+    WrStaData(); 
+    for (int i=0; i<1024; i++) {  Write (0); }
+    Stop();
+}
+#define  Sprite(tt) \  
+  WrStaData(); \
+  for (byte i=0; i<sizeof tt; i++) { \
+  Write (pgm_read_byte(&tt[i])); } Stop()
+#define CopybMapRam(tt) \
+  WrStaData(); \
+  for (byte i=0; i<sizeof tt; i++) { \
+  Write (tt[i]); } Write(0); Stop();
+#define Copy(tt) \
+  WrStaData(); \
+  for (byte i=0; i<sizeof tt/4; i++) { \
+   for (byte j=0; j<4; j++) {Write (pgm_read_byte(&tt[4*i+j]));} \
+   Write (0); } Stop();
+// Maj en 5 de large 
+#define CopyMaj(tt) \
+  WrStaData(); \
+  for (byte i=0; i<sizeof tt/5; i++) { \
+   for (byte j=0; j<5; j++) {Write (pgm_read_byte(&tt[5*i+j]));} \
+   Write (0); } Stop();
+   
+//xxxxxxxxxxxxxxxxxxxxxxxxxx
+//\prog: "OledCarPix.h" 170426
 void Error();
-
 void DoubleH () {Cmd (0xda);Cmd (0x02);}
-
 void Car(char cc) {
   cc&=0x7F; 
   switch (cc/32) {
     case 0:
        if(cc=13) {SetLine(saveLi+1);SetCol(0);} // saut de ligne
+	   else Error();
        break;
     case 1:  // codes 32-
+      Start(); Write (Adr); Write (0x40);
       for (byte i=0; i<4; i++)
-        { taMap[ptMap++] = pgm_read_byte(&taNum[((cc-32)*4)+i]); }
-      taMap[ptMap++] = 0; taMap[ptMap++] = 0; 
+      { Write (pgm_read_byte(&taNum[((cc-32)*4)+i])); }
+      Write (0); Stop(); 
           break;
-    case 2:  // codes 64-
+     case 2:  // codes 64-
+      Start(); Write (Adr); Write (0x40);
       for (byte i=0; i<5; i++)
-        { taMap[ptMap++] = (pgm_read_byte(&taMaj[((cc-64)*5)+i])); }
-      taMap[ptMap++] = 0; 
+      { Write (pgm_read_byte(&taMaj[((cc-64)*5)+i])); }
+      Write (0); Stop();
           break;
     case 3:  //codes 96-
+      Start(); Write (Adr); Write (0x40);
       for (byte i=0; i<4; i++)
-      { taMap[ptMap++] = (pgm_read_byte(&taMin[((cc-96)*4)+i])); }
-      taMap[ptMap++] = 0; 
+      { Write (pgm_read_byte(&taMin[((cc-96)*4)+i])); }
+      Write (0); Stop();
           break;
-  }
+  }  // end switch
 }
-
+void Error() {
+//  LiCol(0,100); Car('e');Car('r');Car('r');Car('o');Car('r');
+}
 #define Text(tt) \
   for (byte i=0; i<sizeof tt; i++) \
-  { Car (tt[i]); }
-
- void Error() {
-  LiCol(0,100); Car('e');Car('r');Car('r');Car('o');Car('r');
-}
-//===============================================================
-//\rout:OledNum.h|  display non significative zeros
+  { Car (tt[i]); } 
+#define BigText(tt) \
+  for (byte i=0; i<sizeof tt; i++) \
+  { Big (tt[i]); } 
+  
+//xxxxxxxxxxxxxxxxxxxxxxxxxxx
+//\prog: OledNum.h  Avec zeros non significatifs
 void Bin8 (byte bb) {
   for (byte i=0;i<8;i++) {
      if (bb&0x80) Car('1');
@@ -256,70 +248,42 @@ void Dec9999 (uint16_t hh) {  // limit� � 0x2703
   if (hh>9999) { Car('?'); Car('?'); Car('?'); Car('?'); } 
   else Hex16(BinDec9999(hh));
 }
-//===============================================================
-//\rout:"OledGraMap.h"| Dots and simple lines in buffer 170426
 
+//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+//\prog: "OledGraPix.h" 170426
 void Dot(byte xx,byte yy) {  // yy 0-64 --> 0-7
-  byte coly, nob;
-  coly = yy/8; nob = yy%8;
-  saveLi = yy/8; saveCol = xx+1;
-  ptMap = (128*saveLi)+saveCol;
-//  GetLiCol();
-  taMap[(coly*128)+xx] |= (1<<nob);
+      LiCol(yy/8,xx);
+      WrStaData (); Write (1<<yy%8); Stop();
 }
-void NoDot(byte xx,byte yy) {  // yy 0-64 --> 0-7
-  byte coly, nob;
-  coly = yy/8; nob = yy%8;
-  saveLi = yy/8; saveCol = xx+1;
-  ptMap = (128*saveLi)+saveCol;
-//  GetLiCol();
-  taMap[(coly*128)+xx] &= ~(1<<nob);
-}
+//ddot  2points superposés si (yy/8!=7)
+// si =7 il faut agit sur le bit0 de la ligne suiv si !=7
 void DDot(byte xx,byte yy) {  // yy0-64 --> 0-7
-  byte coly, nob;  // on ajoute un point en dessous 
-  coly = yy/8; nob = yy%8;
-  taMap[(coly*128)+xx] |= (1<<nob);
-  if ((nob==7)&&(coly<7)) { coly++; nob=0; }
-  else { nob++; }
-  taMap[(coly*128)+xx] |= (1<<nob);
+ byte tmp=(1<<yy%8);
+ if (yy%8!=7) tmp+=(1<<(yy%8+1));
+       LiCol(yy/8,xx);
+      WrStaData (); Write (tmp); Stop();
 }
+
 void Hline (byte yy) {
-  for (byte i=0; i<128; i++) {
-//    taMap[(yy*128)+i] |= (1<<(yy%8));
-     Dot(i,yy); 
-  }
-}
-void Hseg (byte xx,byte yy,byte ll) {
-  for (byte i=0; i<ll; i++) {
-  if((xx+i)>127) break;
-     Dot(xx+i,yy); 
-  }
+  for (byte i=0; i<128; i++) { Dot(i,yy); }
 }
 void Vline (byte xx) {
-  for (byte i=0; i<8; i++) {
-    taMap[(i*128)+xx] = 0xff;
-  }
-} 
-void Vseg (byte xx,byte yy,byte hh) {
-  for (byte i=0; i<hh; i++) {
-    if((yy+i)>63) break;
-    NoDot (xx,yy+i);
-  }
-    for (byte i=0; i<hh; i++) {
-    if((yy+i)>63) break;
-    Dot (xx,yy+i);
-  }
-} 
- 
-//===========
-//\rout:"OledBig.h"|  Double size single Ascii character and numbers
-// Table to double nibble to byte 
+  for (byte i=0; i<8; i++) { 
+    LiCol (i,xx); 
+    WrStaData (); Write (0xFF); Stop();
+  } 
+}  
+#define vLine Vline
+#define hLine Hline
+
+//xxxxxxxxxxxxxxxxxxxxxxxxxx
+//OledBigPix.h  car normaux dans OledCarPix et OledNumPix
+#define BigCar(a) Big(a)  //ko
 byte nToB[]={0,3,0xc,0xf,0x30,0x33,0x3c,0x3f,0xc0,0xc3,0xcc,0xcf,0xf0,0xf3,0xfc,0xff};
 void Big(byte cc) {
   //utilise saveLi -/>  saveCol -->+8 ou+10 selon cc&(1<<5) 
   cc&=0x7F; byte tmp,i,k;
-//if (cc&(1<<5)) k=4; else k=5; // taille
-  k=5;
+  if (cc&(1<<5)) k=4; else k=5; // taille
     // on s'occupe des nible sup
   SetLine (--saveLi); // saveCol défini au premier car
   for (byte i=0; i<k; i++) {
@@ -331,72 +295,69 @@ void Big(byte cc) {
       tmp = pgm_read_byte(&taNum[((cc-32)*4)+i]);
       tmp &= 0x0f;  // low byte
       tmp = nToB[tmp];
-      if (i>3) tmp=0;
       // on écrit ce byte sur 2 colonnes
-      taMap[ptMap++]=(tmp); taMap[ptMap++]=(tmp);    
+      Start(); Write (Adr); Write (0x40);
+      Write (tmp); Write (tmp); Stop();    
       break;
     case 2:  // codes 64- 
       tmp = pgm_read_byte(&taMaj[((cc-64)*5)+i]);
       tmp &= 0x0f;  // low byte
       tmp = nToB[tmp];
-      taMap[ptMap++] = (tmp); taMap[ptMap++] = (tmp); 
+      Start(); Write (Adr); Write (0x40);
+      Write (tmp); Write (tmp); Stop();  
       break;
     case 3:  // codes 96- 
      tmp = pgm_read_byte(&taMin[((cc-96)*4)+i]);
       tmp &= 0x0f;  // low byte
       tmp = nToB[tmp];
       // on écrit ce byte sur 2 colonnes
-      taMap[ptMap++] = (tmp); taMap[ptMap++] = (tmp);  
+      Start(); Write (Adr); Write (0x40);
+      Write (tmp); Write (tmp); Stop();  
       break;
    }  // end switch
   } // end for
-  // On ajoute 2 espaces
-  taMap[ptMap++] = (0);taMap[ptMap++] = (0);
      // on s'occupe des nible inf
   SetLine (++saveLi); SetCol(saveCol); 
   for (byte i=0; i<k; i++) {
    switch (cc/32) {
     case 0:
       break;
-  case 1:  // codes 32-
+    case 1:  // codes 32-
       tmp = pgm_read_byte(&taNum[((cc-32)*4)+i]);
       tmp = (tmp&0xf0)>>4 ;  // high byte
       tmp = nToB[tmp];
-      if (i>3) tmp=0;
       // on écrit ce byte sur 2 colonnes
-      taMap[ptMap++] = (tmp); taMap[ptMap++] = (tmp);     
+      Start(); Write (Adr); Write (0x40);
+      Write (tmp); Write (tmp); Stop();    
       break;
     case 2:  // codes 64- 
       tmp = pgm_read_byte(&taMaj[((cc-64)*5)+i]);
       tmp = (tmp&0xf0)>>4 ;  // high byte
       tmp = nToB[tmp];
       // on écrit ce byte sur 2 colonnes
-      taMap[ptMap++]=(tmp); taMap[ptMap++]=(tmp);  
+      Start(); Write (Adr); Write (0x40);
+      Write (tmp); Write (tmp); Stop(); 
       break;
     case 3:  // codes 96- 
       tmp = pgm_read_byte(&taMin[((cc-96)*4)+i]);
       tmp = (tmp&0xf0)>>4 ;  // high byte
       tmp = nToB[tmp];
       // on écrit ce byte sur 2 colonnes
-      taMap[ptMap++]=(tmp); taMap[ptMap++]=(tmp);  
+      Start(); Write (Adr); Write (0x40);
+      Write (tmp); Write (tmp); Stop(); 
       break;
    }  // end switch
   } // end for
-  // On ajoute 2 espaces
-  taMap[ptMap++] = (0);taMap[ptMap++] = (0);
-  //if (cc&(1<<5)) saveCol+=10; else saveCol+=12; // prep car suivant
-  saveCol+=12;
+  if (cc&(1<<5)) saveCol+=10; else saveCol+=12; // prep car suivant
   SetCol(saveCol);
 }
-void Space (byte nn){ saveCol+=nn;  SetCol(saveCol); }
-
 void BigBin8 (byte bb) {
   for (byte i=0;i<8;i++) {
      if (bb&0x80) Big('1');
      else Big('0');
      bb <<= 1;
   }
-//  Big(' ');
+  Big(' ');
 }
 void BigHex8 (byte hh) {
   byte cc;
@@ -404,22 +365,22 @@ void BigHex8 (byte hh) {
   Big(cc);
   cc = ConvNibble (hh & 0x0F) ; 
   Big(cc);
-//  Big(' '); // space
+  Big(' '); // space
 }
 void BigHex16 (uint16_t hh) {
   byte cc;
   cc = ConvNibble (hh >> 12) ;   Big(cc);
   cc = ConvNibble ((hh >> 8)&0x0F) ; Big(cc);
   cc = ConvNibble ((hh >> 4)&0x0F) ; Big(cc);
-  cc = ConvNibble (hh & 0x0F) ; Big(cc);
-//  Big(' ');
+  cc = ConvNibble (hh & 0x0F) ;   Big(cc);
+  Big(' ');
 }
 void BigHex12 (uint16_t hh) {
   byte cc=0;
   cc = ConvNibble ((hh >> 8)&0x0F) ; Big(cc);
   cc = ConvNibble ((hh >> 4)&0x0F) ; Big(cc);
   cc = ConvNibble (hh & 0x0F) ;   Big(cc);
-//  Big(' ');
+  Big(' ');
 }
 
 void BigDec8 (byte hh) { BigHex12(BinDec8(hh)); }
@@ -429,41 +390,4 @@ void BigDec9999 (uint16_t hh) {  // limité à 0x270F
   else BigHex16(BinDec9999(hh));
 }
 
-//=========================
-//\rout:"OledLineCircle.h"| 170603
-int sx,sy;
-void Line(int8_t x0,int8_t y0,int8_t x1,int8_t y1){
-  int8_t dx =  abs(x1-x0), sx = x0<x1 ? 1 : -1;
-  int8_t dy = -abs(y1-y0), sy = y0<y1 ? 1 : -1;
-  int8_t err = dx+dy, e2; /* error value e_xy */
-  while(1){
-    Dot(x0,y0);
-    if (x0==x1 && y0==y1) break;
-    e2 = 2*err;
-    if (e2 > dy) { err += dy; x0 += sx; } /* e_xy+e_x > 0 */
-    if (e2 < dx) { err += dx; y0 += sy; } /* e_xy+e_y < 0 */
-  }
-}  // End Line
 
-void Circle(uint8_t x0,uint8_t y0,uint8_t radius) {
-    int8_t f = 1 - radius;
-    int8_t ddF_x = 0;
-    int8_t ddF_y = -2 * radius;
-    uint8_t x = 0;
-    uint8_t y = radius;
-    Dot(x0, y0 + radius);
-    Dot(x0, y0 - radius);
-    Dot(x0 + radius, y0);
-    Dot(x0 - radius, y0);
-    while(x < y) {
-      if(f >= 0) {
-        y--; ddF_y += 2; f += ddF_y;
-      }
-      x++; ddF_x += 2; f += ddF_x + 1;
-      Dot(x0+x,y0+y); Dot(x0-x,y0+y);
-      Dot(x0+x,y0-y); Dot(x0-x,y0-y);
-      Dot(x0+y,y0+x); Dot(x0-y,y0+x);
-      Dot(x0+y,y0-x); Dot(x0-y,y0-x);
-    }
-  }  // end Circle
-  
